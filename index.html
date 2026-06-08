@@ -4834,6 +4834,63 @@ window.swPromise.then(function() {
     <script defer="" src="js/site-stat.js"></script>
     <script>window.__LANG__ = "en"</script>
     <style>
+      .spinner_1YO,
+      .loading-overlay__wrapper_IQ2,
+      .spinner__wrapper_1Dr,
+      .media-placeholder_3aX {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+
+      html, body, #app, #page-home {
+        min-height: 100%;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+
+      body {
+        background: #ffffff !important;
+      }
+
+      .static-fallback-hero {
+        display: none;
+        padding: 72px 20px 32px;
+        background: linear-gradient(180deg, #231f20 0%, #2d2726 100%);
+        color: #fff;
+      }
+
+      .static-fallback-hero__inner {
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+
+      .static-fallback-hero__eyebrow {
+        display: inline-block;
+        margin-bottom: 14px;
+        color: #d29650;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      .static-fallback-hero__title {
+        margin: 0 0 18px;
+        font-size: clamp(34px, 6vw, 72px);
+        font-weight: 700;
+        line-height: 1.02;
+      }
+
+      .static-fallback-hero__text {
+        max-width: 760px;
+        font-size: 20px;
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.86);
+      }
+    </style>
+    <style>
       .custom-photo-gallery {
         max-width: 1200px;
         margin: 64px auto 0;
@@ -4908,6 +4965,38 @@ window.swPromise.then(function() {
     </style>
     <script>
       (function enhanceLandingPage() {
+        function hydrateImages() {
+          document.querySelectorAll("img[data-src], img[data-fallback-url]").forEach(function(img) {
+            if (!img.getAttribute("src")) {
+              img.setAttribute("src", img.getAttribute("data-src") || img.getAttribute("data-fallback-url"));
+            }
+          });
+        }
+
+        function ensureFallbackHero() {
+          if (document.querySelector(".static-fallback-hero")) return;
+
+          var blocks = document.querySelector(".blocks-group-wrapper_a80");
+          if (!blocks) return;
+
+          var hero = document.createElement("section");
+          hero.className = "static-fallback-hero";
+          hero.innerHTML =
+            '<div class="static-fallback-hero__inner">' +
+              '<span class="static-fallback-hero__eyebrow">Будівельні роботи</span>' +
+              '<h1 class="static-fallback-hero__title">Реконструкція покрівлі та фасадів під ключ</h1>' +
+              '<p class="static-fallback-hero__text">Якщо окремі динамічні блоки експорту відпрацьовують нестабільно, цей fallback-гайрлайн гарантує, що сторінка все одно відкривається не порожньою і користувач одразу бачить основну пропозицію.</p>' +
+            '</div>';
+
+          blocks.parentNode.insertBefore(hero, blocks);
+        }
+
+        function removeFullscreenOverlays() {
+          document.querySelectorAll(".spinner_1YO, .loading-overlay__wrapper_IQ2, .spinner__wrapper_1Dr, .media-placeholder_3aX").forEach(function(node) {
+            node.remove();
+          });
+        }
+
         function removeFooterPersonInfo() {
           document.querySelectorAll("p, span, div").forEach(function(node) {
             var text = (node.textContent || "").trim();
@@ -4964,9 +5053,23 @@ window.swPromise.then(function() {
         }
 
         function runEnhancements() {
+          hydrateImages();
+          removeFullscreenOverlays();
+          ensureFallbackHero();
           removeFooterPersonInfo();
           removeSocialIcons();
           injectGallery();
+
+          setTimeout(function() {
+            var firstVisibleBlock = document.querySelector(".block-wrapper_21s");
+            var fallbackHero = document.querySelector(".static-fallback-hero");
+
+            if (firstVisibleBlock && firstVisibleBlock.getBoundingClientRect().height < 80 && fallbackHero) {
+              fallbackHero.style.display = "block";
+            } else if (fallbackHero) {
+              fallbackHero.style.display = "block";
+            }
+          }, 250);
         }
 
         if (document.readyState === "loading") {
